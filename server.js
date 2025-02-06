@@ -13,14 +13,18 @@ class Storage {
     constructor() {
         this.users = new Map();
         this.tokens = new Map();
+        this.extensionToToken = new Map();
     }
 
     addUser(extension, data) {
+        const { token, ...userData } = data;
         this.users.set(extension, {
-            ...data,
+            ...userData,
+            token,
             status: '已註冊',
             lastUpdate: new Date().toISOString()
         });
+        this.extensionToToken.set(extension, token);
     }
 
     getUser(extension) {
@@ -36,6 +40,16 @@ class Storage {
 
     getToken(token) {
         return this.tokens.get(token);
+    }
+
+    updateUserToken(extension, token) {
+        const user = this.getUser(extension);
+        if (user) {
+            user.token = token;
+            user.lastUpdate = new Date().toISOString();
+            this.users.set(extension, user);
+            this.extensionToToken.set(extension, token);
+        }
     }
 }
 
