@@ -1,6 +1,6 @@
 // API端點配置
 const API_CONFIG = {
-    baseUrl: 'https://callkit-tutorial.vercel.app',
+    baseUrl: 'https://get-token-softphone.vercel.app',
     endpoints: {
         register: '/api/register',
         query: '/api/query'
