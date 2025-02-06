@@ -71,9 +71,9 @@ async function queryInfo() {
             const resultDiv = document.getElementById('queryResult');
             resultDiv.innerHTML = `
                 <h3>查詢結果</h3>
-                <p>分機號碼：${data.extension}</p>
-                <p>註冊狀態：${data.status}</p>
-                <p>最後更新：${new Date(data.lastUpdate).toLocaleString()}</p>
+                <p>分機號碼：${data.data.extension}</p>
+                <p>註冊狀態：${data.data.status}</p>
+                <p>最後更新：${new Date(data.data.lastUpdate).toLocaleString()}</p>
             `;
         } else {
             throw new Error(data.message || '查詢失敗');
