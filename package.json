@@ -4,7 +4,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "vercel-build": "mkdir -p public && cp -r index.html js public/",
+    "build": "npm run vercel-build"
   },
   "keywords": [],
   "author": "",
