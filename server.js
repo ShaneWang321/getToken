@@ -21,21 +21,25 @@ class Storage {
         const { token, ...userData } = data;
         const tokenData = this.tokens.get(token);
         
-        this.users.set(extension, {
+        const userInfo = {
             ...userData,
             token,
             status: '已註冊',
             platform: tokenData ? tokenData.platform : undefined,
             type: tokenData ? tokenData.type : undefined,
             lastUpdate: new Date().toISOString()
-        });
-        
+        };
+
+        this.users.set(extension, userInfo);
         this.extensionToToken.set(extension, token);
         this.tokenToExtension.set(token, extension);
-    }
 
-    getUser(extension) {
-        return this.users.get(extension);
+        // 如果已經有token數據，更新用戶信息
+        if (tokenData) {
+            this.updateUserToken(extension, token);
+        }
+
+        return userInfo;
     }
 
     addToken(token, data) {
@@ -50,6 +54,33 @@ class Storage {
         if (extension) {
             this.updateUserToken(extension, token);
         }
+
+        return tokenData;
+    }
+
+    updateUserToken(extension, token) {
+        const user = this.getUser(extension);
+        const tokenData = this.getToken(token);
+        
+        if (user && tokenData) {
+            const updatedUser = {
+                ...user,
+                token,
+                platform: tokenData.platform,
+                type: tokenData.type,
+                lastUpdate: new Date().toISOString()
+            };
+            
+            this.users.set(extension, updatedUser);
+            this.extensionToToken.set(extension, token);
+            this.tokenToExtension.set(token, extension);
+            
+            return updatedUser;
+        }
+        return null;
+    }
+    getUser(extension) {
+        return this.users.get(extension);
     }
 
     getToken(token) {
