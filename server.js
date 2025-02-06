@@ -32,10 +32,19 @@ class Storage {
     }
 
     addToken(token, data) {
-        this.tokens.set(token, {
+        const tokenData = {
             ...data,
             registeredAt: new Date().toISOString()
-        });
+        };
+        this.tokens.set(token, tokenData);
+        
+        // 如果用戶已經註冊，更新對應的token
+        for (const [extension, user] of this.users.entries()) {
+            if (user.token === token) {
+                this.updateUserToken(extension, token);
+                break;
+            }
+        }
     }
 
     getToken(token) {
@@ -45,8 +54,13 @@ class Storage {
     updateUserToken(extension, token) {
         const user = this.getUser(extension);
         if (user) {
+            const tokenData = this.getToken(token);
             user.token = token;
             user.lastUpdate = new Date().toISOString();
+            if (tokenData) {
+                user.platform = tokenData.platform;
+                user.type = tokenData.type;
+            }
             this.users.set(extension, user);
             this.extensionToToken.set(extension, token);
         }
