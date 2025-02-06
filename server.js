@@ -14,17 +14,24 @@ class Storage {
         this.users = new Map();
         this.tokens = new Map();
         this.extensionToToken = new Map();
+        this.tokenToExtension = new Map();
     }
 
     addUser(extension, data) {
         const { token, ...userData } = data;
+        const tokenData = this.tokens.get(token);
+        
         this.users.set(extension, {
             ...userData,
             token,
             status: '已註冊',
+            platform: tokenData ? tokenData.platform : undefined,
+            type: tokenData ? tokenData.type : undefined,
             lastUpdate: new Date().toISOString()
         });
+        
         this.extensionToToken.set(extension, token);
+        this.tokenToExtension.set(token, extension);
     }
 
     getUser(extension) {
@@ -38,12 +45,10 @@ class Storage {
         };
         this.tokens.set(token, tokenData);
         
-        // 如果用戶已經註冊，更新對應的token
-        for (const [extension, user] of this.users.entries()) {
-            if (user.token === token) {
-                this.updateUserToken(extension, token);
-                break;
-            }
+        // 檢查是否有關聯的用戶
+        const extension = this.tokenToExtension.get(token);
+        if (extension) {
+            this.updateUserToken(extension, token);
         }
     }
 
