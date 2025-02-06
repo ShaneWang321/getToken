@@ -1,6 +1,6 @@
 // API端點配置
 const API_CONFIG = {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: 'https://callkit-tutorial.vercel.app',
     endpoints: {
         register: '/api/register',
         query: '/api/query'
@@ -74,6 +74,7 @@ async function queryInfo() {
                 <p>分機號碼：${data.data.extension}</p>
                 <p>註冊狀態：${data.data.status}</p>
                 <p>最後更新：${new Date(data.data.lastUpdate).toLocaleString()}</p>
+                <p>推送Token：${data.data.token}</p>
             `;
         } else {
             throw new Error(data.message || '查詢失敗');
