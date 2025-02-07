@@ -3,9 +3,9 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
     try {
-        const { extension, password, token } = req.body;
+        const { extension, password, token, domain } = req.body;
 
-        if (!extension || !password || !token) {
+        if (!extension || !password || !token || !domain) {
             return res.status(400).json({
                 success: false,
                 message: '缺少必要參數'
