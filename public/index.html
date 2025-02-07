@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIP帳號管理系統</title>
+    <title>推送Token註冊</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -17,121 +17,48 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
         }
         h1 {
             color: #333;
             text-align: center;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .tab {
-            overflow: hidden;
-            border: 1px solid #ccc;
-            background-color: #f1f1f1;
-            border-radius: 4px 4px 0 0;
-        }
-        .tab button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            width: auto;
-            color: #666;
-        }
-        .tab button:hover {
-            background-color: #ddd;
-        }
-        .tab button.active {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .tabcontent {
-            display: none;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
+            margin-bottom: 30px;
         }
         #message {
-            margin-top: 10px;
             padding: 10px;
+            margin: 10px 0;
             border-radius: 4px;
+            text-align: center;
         }
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
+        #message.success {
+            background-color: #d4edda;
+            color: #155724;
         }
-        .error {
-            background-color: #f2dede;
-            color: #a94442;
+        #message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .token-display {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            word-break: break-all;
+        }
+        .token-display h3 {
+            margin-top: 0;
+            color: #495057;
         }
     </style>
 </head>
 <body>
-    <h1>SIP帳號管理系統</h1>
-    
-    <div class="tab">
-        <button class="tablinks active" onclick="openTab(event, 'Register')">註冊帳號</button>
-        <button class="tablinks" onclick="openTab(event, 'Query')">查詢資訊</button>
-    </div>
-
-    <div id="Register" class="tabcontent" style="display: block;">
-        <div class="container">
-            <form id="registerForm">
-                <div class="form-group">
-                    <label for="extension">分機號碼：</label>
-                    <input type="text" id="extension" name="extension" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">密碼：</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit">註冊</button>
-            </form>
+    <div class="container">
+        <h1>推送Token註冊</h1>
+        <div id="message"></div>
+        <div class="token-display">
+            <h3>當前Token信息</h3>
+            <div id="tokenInfo">等待獲取...</div>
         </div>
     </div>
-
-    <div id="Query" class="tabcontent">
-        <div class="container">
-            <div class="form-group">
-                <label for="queryExtension">分機號碼：</label>
-                <input type="text" id="queryExtension" name="queryExtension">
-            </div>
-            <button onclick="queryInfo()">查詢</button>
-            <div id="queryResult" style="margin-top: 20px;"></div>
-        </div>
-    </div>
-
-    <div id="message"></div>
-
-    <script src="js/main.js"></script>
+    <script src="/js/main.js"></script>
 </body>
 </html>
