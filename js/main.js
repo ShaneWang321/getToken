@@ -25,8 +25,8 @@ async function handleRegister(event) {
     const password = document.getElementById('password').value;
     
     try {
-        // 獲取推送token
-        const token = await getPushToken();
+        // 獲取推送token和設備類型
+        const { token, deviceType } = await getPushToken();
         
         // 發送註冊請求
         const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.register}`, {
@@ -37,7 +37,8 @@ async function handleRegister(event) {
             body: JSON.stringify({
                 extension,
                 password,
-                token
+                token,
+                deviceType
             })
         });
 
@@ -87,8 +88,11 @@ async function queryInfo() {
 // 獲取推送Token
 async function getPushToken() {
     // 這裡需要與iOS應用程序進行通信
-    // 暫時返回一個模擬的token
-    return 'sample_push_token';
+    // 暫時返回模擬的token和設備類型
+    return {
+        token: 'sample_push_token',
+        deviceType: 'ios'
+    };
 }
 
 // 顯示消息
