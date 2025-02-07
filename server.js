@@ -15,6 +15,8 @@ class Storage {
         this.tokens = new Map();
         this.extensionToToken = new Map();
         this.tokenToExtension = new Map();
+        this.getAllTokens = this.getAllTokens.bind(this);
+        this.getAllUsers = this.getAllUsers.bind(this);
     }
 
     addUser(extension, data) {
@@ -79,6 +81,7 @@ class Storage {
         }
         return null;
     }
+
     getUser(extension) {
         return this.users.get(extension);
     }
@@ -87,19 +90,22 @@ class Storage {
         return this.tokens.get(token);
     }
 
-    updateUserToken(extension, token) {
-        const user = this.getUser(extension);
-        if (user) {
-            const tokenData = this.getToken(token);
-            user.token = token;
-            user.lastUpdate = new Date().toISOString();
-            if (tokenData) {
-                user.platform = tokenData.platform;
-                user.type = tokenData.type;
-            }
-            this.users.set(extension, user);
-            this.extensionToToken.set(extension, token);
-        }
+    getAllTokens() {
+        return Array.from(this.tokens.entries()).map(([token, data]) => {
+            return {
+                token,
+                ...data
+            };
+        });
+    }
+
+    getAllUsers() {
+        return Array.from(this.users.entries()).map(([extension, data]) => {
+            return {
+                extension,
+                ...data
+            };
+        });
     }
 }
 
@@ -185,6 +191,24 @@ class App {
                     });
                 }
             });
+
+        // 獲取所有token
+        this.app.get('/api/tokens', (req, res) => {
+            const tokens = this.storage.getAllTokens();
+            res.json({
+                status: 'success',
+                data: tokens
+            });
+        });
+
+        // 獲取所有用戶
+        this.app.get('/api/users', (req, res) => {
+            const users = this.storage.getAllUsers();
+            res.json({
+                status: 'success',
+                data: users
+            });
+        });
 
         // 用戶查詢路由
         this.app.get('/api/query/:extension', (req, res) => {
