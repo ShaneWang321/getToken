@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/postgres';
+import { registerToken } from '../utils/storage.js';
 
 export const config = {
   runtime: 'edge',
@@ -22,25 +22,17 @@ export default async function handler(req) {
       });
     }
 
-    const client = createClient();
-    await client.connect();
-
-    // 插入或更新token記錄
-    const { rows } = await client.query(
-      `INSERT INTO push_tokens (extension, token, type, platform, created_at) 
-       VALUES ($1, $2, $3, $4, NOW()) 
-       ON CONFLICT (extension) 
-       DO UPDATE SET token = $2, type = $3, platform = $4, created_at = NOW() 
-       RETURNING *`,
-      [extension, token, type, platform]
-    );
-
-    await client.end();
+    const tokenData = await registerToken({
+      extension,
+      token,
+      type,
+      platform
+    });
 
     return new Response(JSON.stringify({
       success: true,
       message: '推送token註冊成功',
-      data: rows[0]
+      data: tokenData
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

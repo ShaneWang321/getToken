@@ -1,7 +1,12 @@
-const express = require('express');
-const cors = require('cors');
-const registerRouter = require('./register');
-const queryRouter = require('./query/[extension]');
+import express from 'express';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import registerRouter from './register/route.js';
+import queryRouter from './query/[extension].js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,7 +20,7 @@ app.use('/api/register', registerRouter);
 app.use('/api/query', queryRouter);
 
 // 靜態文件服務
-app.use(express.static('public'));
+app.use(express.static(join(__dirname, '../../public')));
 
 // 啟動服務器
 app.listen(port, () => {

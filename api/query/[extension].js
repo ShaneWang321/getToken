@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/postgres';
+import { getToken } from '../utils/storage.js';
 
 export const config = {
   runtime: 'edge',
@@ -16,24 +16,19 @@ export default async function handler(req) {
       });
     }
 
-    const client = createClient();
-    await client.connect();
+    const tokenData = await getToken(extension);
 
-    const { rows } = await client.query(
-      'SELECT token, type FROM push_tokens WHERE extension = $1 ORDER BY created_at DESC LIMIT 1',
-      [extension]
-    );
-
-    await client.end();
-
-    if (rows.length === 0) {
+    if (!tokenData) {
       return new Response(JSON.stringify({ error: '找不到該分機號碼的token' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(rows[0]), {
+    return new Response(JSON.stringify({
+      token: tokenData.token,
+      type: tokenData.type
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
