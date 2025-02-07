@@ -1,60 +1,31 @@
-import { NextResponse } from 'next/server';
+const express = require('express');
+const router = express.Router();
 
-export const config = {
-    runtime: 'edge',
-};
-
-export default async function handler(req) {
-    if (req.method !== 'GET') {
-        return new NextResponse(JSON.stringify({
-            success: false,
-            message: '不支持的請求方法'
-        }), {
-            status: 405,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-    }
-
+router.get('/:extension', async (req, res) => {
     try {
-        const url = new URL(req.url);
-        const extension = url.pathname.split('/').pop();
+        const { extension } = req.params;
 
         if (!extension) {
-            return new NextResponse(JSON.stringify({
+            return res.status(400).json({
                 success: false,
                 message: '缺少分機號碼'
-            }), {
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
             });
         }
 
         // TODO: 實際的查詢邏輯
         // 這裡應該添加與SIP服務器的交互邏輯
 
-        return new NextResponse(JSON.stringify({
+        return res.status(200).json({
             extension,
             status: '在線',
             lastUpdate: new Date().toISOString()
-        }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-            },
         });
     } catch (error) {
-        return new NextResponse(JSON.stringify({
+        return res.status(500).json({
             success: false,
             message: '服務器錯誤：' + error.message
-        }), {
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json',
-            },
         });
     }
-}
+});
+
+module.exports = router;
