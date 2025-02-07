@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "vercel dev",
-    "build": "mkdir -p public && cp -r index.html js public/",
     "deploy": "vercel deploy --prod"
   },
   "dependencies": {
