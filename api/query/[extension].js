@@ -1,31 +1,47 @@
-const express = require('express');
-const router = express.Router();
+import { createClient } from '@vercel/postgres';
 
-router.get('/:extension', async (req, res) => {
-    try {
-        const { extension } = req.params;
+export const config = {
+  runtime: 'edge',
+};
 
-        if (!extension) {
-            return res.status(400).json({
-                success: false,
-                message: '缺少分機號碼'
-            });
-        }
+export default async function handler(req) {
+  try {
+    const url = new URL(req.url);
+    const extension = url.pathname.split('/').pop();
 
-        // TODO: 實際的查詢邏輯
-        // 這裡應該添加與SIP服務器的交互邏輯
-
-        return res.status(200).json({
-            extension,
-            status: '在線',
-            lastUpdate: new Date().toISOString()
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: '服務器錯誤：' + error.message
-        });
+    if (!extension) {
+      return new Response(JSON.stringify({ error: '缺少分機號碼' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
-});
 
-module.exports = router;
+    const client = createClient();
+    await client.connect();
+
+    const { rows } = await client.query(
+      'SELECT token, type FROM push_tokens WHERE extension = $1 ORDER BY created_at DESC LIMIT 1',
+      [extension]
+    );
+
+    await client.end();
+
+    if (rows.length === 0) {
+      return new Response(JSON.stringify({ error: '找不到該分機號碼的token' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify(rows[0]), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('查詢token時發生錯誤:', error);
+    return new Response(JSON.stringify({ error: '服務器內部錯誤' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
