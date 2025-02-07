@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { kv } = require('@vercel/kv');
 const bodyParser = require('body-parser');
 
 const app = express();
@@ -11,26 +11,19 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// 創建SQLite數據庫連接
-const db = new sqlite3.Database('devices.db', (err) => {
-    if (err) {
-        console.error('數據庫連接錯誤:', err);
-    } else {
-        console.log('成功連接到SQLite數據庫');
-        // 創建設備表
-        db.run(`CREATE TABLE IF NOT EXISTS devices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            extension TEXT NOT NULL,
-            token TEXT NOT NULL,
-            platform TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
+// 初始化Vercel KV存儲
+const initializeKV = async () => {
+    try {
+        console.log('成功連接到Vercel KV存儲');
+    } catch (error) {
+        console.error('Vercel KV存儲連接錯誤:', error);
     }
-});
+};
+
+initializeKV();
 
 // 設備註冊端點
-app.post('/api/register-device', (req, res) => {
+app.post('/api/register-device', async (req, res) => {
     const { extension, token, platform } = req.body;
 
     if (!extension || !token || !platform) {
@@ -40,65 +33,69 @@ app.post('/api/register-device', (req, res) => {
         });
     }
 
-    // 更新或插入設備記錄
-    db.run(`INSERT OR REPLACE INTO devices (extension, token, platform, updated_at)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
-        [extension, token, platform],
-        function(err) {
-            if (err) {
-                console.error('註冊設備錯誤:', err);
-                return res.status(500).json({
-                    success: false,
-                    message: '設備註冊失敗'
-                });
-            }
+    try {
+        // 更新或插入設備記錄
+        const device = {
+            extension,
+            token,
+            platform,
+            updated_at: new Date().toISOString()
+        };
 
-            res.json({
-                success: true,
-                message: '設備註冊成功',
-                deviceId: this.lastID
-            });
-        }
-    );
-});
-
-// 獲取所有註冊設備
-app.get('/api/devices', (req, res) => {
-    db.all('SELECT * FROM devices ORDER BY updated_at DESC', [], (err, rows) => {
-        if (err) {
-            console.error('獲取設備列表錯誤:', err);
-            return res.status(500).json({
-                success: false,
-                message: '獲取設備列表失敗'
-            });
-        }
+        await kv.set(`device:${extension}`, device);
 
         res.json({
             success: true,
-            devices: rows
+            message: '設備註冊成功',
+            device
         });
-    });
+    } catch (error) {
+        console.error('註冊設備錯誤:', error);
+        res.status(500).json({
+            success: false,
+            message: '設備註冊失敗'
+        });
+    }
+});
+
+// 獲取所有註冊設備
+app.get('/api/devices', async (req, res) => {
+    try {
+        const keys = await kv.keys('device:*');
+        const devices = await Promise.all(
+            keys.map(key => kv.get(key))
+        );
+
+        res.json({
+            success: true,
+            devices: devices.sort((a, b) => 
+                new Date(b.updated_at) - new Date(a.updated_at)
+            )
+        });
+    } catch (error) {
+        console.error('獲取設備列表錯誤:', error);
+        res.status(500).json({
+            success: false,
+            message: '獲取設備列表失敗'
+        });
+    }
 });
 
 // 刪除設備註冊
-app.delete('/api/devices/:extension', (req, res) => {
+app.delete('/api/devices/:extension', async (req, res) => {
     const { extension } = req.params;
 
-    db.run('DELETE FROM devices WHERE extension = ?', [extension], function(err) {
-        if (err) {
-            console.error('刪除設備錯誤:', err);
-            return res.status(500).json({
-                success: false,
-                message: '刪除設備失敗'
-            });
-        }
-
-        if (this.changes === 0) {
+    try {
+        const device = await kv.get(`device:${extension}`);
+        if (!device) {
             return res.status(404).json({
                 success: false,
                 message: '未找到指定設備'
             });
         }
+
+        await kv.del(`device:${extension}`);
+
 
         res.json({
             success: true,
